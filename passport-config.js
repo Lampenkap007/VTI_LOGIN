@@ -1,6 +1,8 @@
 const LocalStrategy = require('passport-local').Strategy
 const bcrypt = require('bcryptjs')
 
+
+//controleert of gebruikers bestaan en of wachtwoorden kloppen.
 async function initialize(passport, getUserByEmail, getUserById) {
     const authenticateUser = async (email, password, done) => {
         const user = getUserByEmail(email)

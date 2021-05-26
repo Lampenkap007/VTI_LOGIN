@@ -11,6 +11,7 @@ const session = require('express-session')
 const methodOverride = require('method-override')
 const axios = require('axios')
 
+
 const initializePassport = require('./passport-config')
 initializePassport(
     passport,
@@ -18,6 +19,8 @@ initializePassport(
     _id => users.find(user => user._id === _id)
 )
 
+
+//get users from database when server starts
 axios.get('http://jordi.dsmynas.com:3000/users')
     .then(result => {
         users = result.data
@@ -41,12 +44,15 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(methodOverride('_method'))
 
+
+//route to indexpage
 app.get('/', checkAuthenticated, (req, res) => {
     res.render('index.ejs', {
         name: req.user.name
     })
 })
 
+//route to loginpage
 app.get('/login', checkNotAuthenticated, (req, res) => {
     res.render('login.ejs')
 })
@@ -58,10 +64,13 @@ app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
     failureFlash: true
 }))
 
+//route to registerpage
 app.get('/register', checkNotAuthenticated, (req, res) => {
     res.render('register.ejs')
 })
 
+
+//post method to get data from registerform in database
 app.post('/register', checkNotAuthenticated, async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10)
