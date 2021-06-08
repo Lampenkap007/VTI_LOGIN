@@ -5,14 +5,95 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <title>Document</title>
 </head>
 
+
 <body>
-    <h1>Hi <%= name %></h1>
+    <h1>Hallo <%= name %></h1>
     <form action="/logout?_method=DELETE" method="POST">
-        <button type="submit">Log Out</button>
+        <button type="submit" onclick=" window.open('http://jordi.dsmynas.com:3002/','_parent')">Log Out</button>
     </form>
+
+    <div id="rooms"></div>
+    <div id="addRoom">
+        <div onclick="addRoom()">Add room +</div>
+    </div>
 </body>
+
+<script>
+    $.ajax({
+        url: "http://jordi.dsmynas.com:3000/users",
+        type: 'GET',
+        success: function (res) {
+            let connectedRoomsId = res.find(connectedRooms => connectedRooms._id === '<%= _id %>')
+                .connectedRooms;
+            connectedRoomsId.forEach(findRoomName);
+
+            function findRoomName(item) {
+                $.ajax({
+                    url: "http://jordi.dsmynas.com:3000/rooms",
+                    type: 'GET',
+                    success: function (res) {
+                        let connectedRoomsName = res.find(roomName => roomName._id ===
+                                item)
+                            .roomName;
+                        document.getElementById("rooms").innerHTML +=
+                            '<a href="http://jordi.dsmynas.com:3002/' + item +
+                            '" target="_parent">' +
+                            connectedRoomsName + '</a><br>';
+                    }
+                });
+            }
+        }
+    });
+
+    function addRoom() {
+        document.getElementById("addRoom").innerHTML =
+            '<input type="text" placeholder="Enter room name" id="addRoomInput">';
+        document.getElementById("addRoomInput").addEventListener("keyup", function (event) {
+            if (event.keyCode === 13 && document.getElementById("addRoomInput").value != "") {
+                roomNameToSend = {
+                    roomName: document.getElementById("addRoomInput").value
+                }
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    url: "http://jordi.dsmynas.com:3000/rooms",
+                    data: JSON.stringify(roomNameToSend),
+                    dataType: "json",
+                    success: function () {
+                        $.ajax({
+                            url: "http://jordi.dsmynas.com:3000/rooms",
+                            type: 'GET',
+                            success: function (res) {
+                                let newRoomId = res.find(_id => _id.roomName ===
+                                        document.getElementById("addRoomInput").value)
+                                    ._id;
+
+                                roomIdToSend = {
+                                    connectedRooms: newRoomId
+                                }
+                                $.ajax({
+                                    url: "http://jordi.dsmynas.com:3000/users/<%= _id %>",
+                                    contentType: "application/json; charset=utf-8",
+                                    type: 'PUT',
+                                    data: JSON.stringify(roomIdToSend),
+                                    dataType: "json",
+                                    success: function (res) {
+                                        location.reload();
+                                    }
+                                });
+                            }
+                        });
+
+                    },
+                });
+            }
+        })
+
+    }
+</script>
 
 </html>

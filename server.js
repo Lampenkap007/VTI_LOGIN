@@ -48,7 +48,8 @@ app.use(methodOverride('_method'))
 //route to indexpage
 app.get('/', checkAuthenticated, (req, res) => {
     res.render('index.ejs', {
-        name: req.user.name
+        name: req.user.name,
+        _id: req.user._id
     })
 })
 
